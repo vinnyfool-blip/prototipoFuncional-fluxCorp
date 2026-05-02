@@ -1,0 +1,1811 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>FluxCorp — Sistema Corporativo</title>
+<style>
+  @import url('https://fonts.googleapis.com/css2?family=IBM+Plex+Mono:wght@400;500;600&family=Syne:wght@400;600;700;800&family=DM+Sans:wght@300;400;500;600&display=swap');
+
+  :root {
+    --bg: #0F1117;
+    --surface: #1A1D27;
+    --surface2: #232736;
+    --border: #2E3347;
+    --accent: #00E5C3;
+    --accent2: #FFB830;
+    --accent3: #FF5E7D;
+    --text: #E8EAF0;
+    --muted: #6B7280;
+    --success: #22C55E;
+    --warning: #F59E0B;
+    --danger: #EF4444;
+    --info: #3B82F6;
+  }
+
+  * { margin:0; padding:0; box-sizing:border-box; }
+
+  body {
+    font-family: 'DM Sans', sans-serif;
+    background: var(--bg);
+    color: var(--text);
+    min-height: 100vh;
+    overflow-x: hidden;
+  }
+
+  /* ── TOPBAR ── */
+  .topbar {
+    position: fixed; top:0; left:0; right:0;
+    height: 56px;
+    background: var(--surface);
+    border-bottom: 1px solid var(--border);
+    display: flex; align-items: center;
+    padding: 0 24px;
+    gap: 32px;
+    z-index: 1000;
+  }
+
+  .logo {
+    font-family: 'Syne', sans-serif;
+    font-weight: 800;
+    font-size: 20px;
+    color: var(--accent);
+    letter-spacing: -0.5px;
+    cursor: pointer;
+    text-decoration: none;
+  }
+
+  .logo span { color: var(--text); }
+
+  .nav-links {
+    display: flex; gap: 4px; flex: 1;
+  }
+
+  .nav-link {
+    padding: 6px 14px;
+    border-radius: 6px;
+    font-size: 13px;
+    font-weight: 500;
+    color: var(--muted);
+    cursor: pointer;
+    transition: all 0.15s;
+    border: none; background: none;
+    font-family: 'DM Sans', sans-serif;
+  }
+
+  .nav-link:hover { color: var(--text); background: var(--surface2); }
+  .nav-link.active { color: var(--accent); background: rgba(0,229,195,0.08); }
+
+  .topbar-right {
+    display: flex; align-items: center; gap: 12px; margin-left: auto;
+  }
+
+  .notif-btn {
+    position: relative;
+    width: 34px; height: 34px;
+    border-radius: 8px;
+    background: var(--surface2);
+    border: 1px solid var(--border);
+    display: flex; align-items: center; justify-content: center;
+    cursor: pointer; font-size: 16px;
+  }
+
+  .notif-dot {
+    position: absolute; top: 5px; right: 5px;
+    width: 8px; height: 8px;
+    border-radius: 50%; background: var(--accent3);
+    border: 2px solid var(--surface);
+  }
+
+  .user-chip {
+    display: flex; align-items: center; gap: 8px;
+    padding: 4px 12px 4px 4px;
+    background: var(--surface2);
+    border: 1px solid var(--border);
+    border-radius: 20px;
+    cursor: pointer;
+  }
+
+  .avatar {
+    width: 26px; height: 26px;
+    border-radius: 50%;
+    background: var(--accent);
+    display: flex; align-items: center; justify-content: center;
+    font-size: 10px; font-weight: 700;
+    color: var(--bg);
+  }
+
+  .user-name { font-size: 13px; font-weight: 500; }
+
+  /* ── LAYOUT ── */
+  .layout {
+    display: flex;
+    padding-top: 56px;
+    min-height: 100vh;
+  }
+
+  .sidebar {
+    width: 220px;
+    background: var(--surface);
+    border-right: 1px solid var(--border);
+    position: fixed;
+    top: 56px; bottom: 0; left: 0;
+    padding: 20px 12px;
+    display: flex; flex-direction: column; gap: 2px;
+    overflow-y: auto;
+  }
+
+  .sidebar-section {
+    font-size: 10px;
+    font-family: 'IBM Plex Mono', monospace;
+    color: var(--muted);
+    letter-spacing: 1.5px;
+    text-transform: uppercase;
+    padding: 14px 8px 6px;
+  }
+
+  .sidebar-item {
+    display: flex; align-items: center; gap: 10px;
+    padding: 9px 10px;
+    border-radius: 8px;
+    cursor: pointer;
+    font-size: 13px;
+    font-weight: 500;
+    color: var(--muted);
+    transition: all 0.15s;
+    border: none; background: none;
+    width: 100%;
+    font-family: 'DM Sans', sans-serif;
+    text-align: left;
+  }
+
+  .sidebar-item:hover { color: var(--text); background: var(--surface2); }
+  .sidebar-item.active { color: var(--accent); background: rgba(0,229,195,0.1); }
+
+  .sidebar-icon { font-size: 15px; min-width: 18px; text-align: center; }
+
+  .badge {
+    margin-left: auto;
+    background: var(--accent3);
+    color: white;
+    font-size: 10px; font-weight: 700;
+    padding: 2px 6px; border-radius: 10px;
+  }
+
+  .badge.info { background: var(--info); }
+
+  .main {
+    margin-left: 220px;
+    flex: 1;
+    padding: 32px;
+    min-height: calc(100vh - 56px);
+  }
+
+  /* ── PAGE HEADER ── */
+  .page-header {
+    display: flex; justify-content: space-between; align-items: flex-start;
+    margin-bottom: 28px;
+  }
+
+  .page-title {
+    font-family: 'Syne', sans-serif;
+    font-size: 26px; font-weight: 700;
+    color: var(--text);
+  }
+
+  .page-sub {
+    font-size: 13px; color: var(--muted); margin-top: 4px;
+  }
+
+  /* ── BUTTONS ── */
+  .btn {
+    display: inline-flex; align-items: center; gap: 7px;
+    padding: 9px 18px;
+    border-radius: 8px;
+    font-size: 13px; font-weight: 600;
+    cursor: pointer; border: none;
+    font-family: 'DM Sans', sans-serif;
+    transition: all 0.15s;
+    text-decoration: none;
+  }
+
+  .btn-primary { background: var(--accent); color: var(--bg); }
+  .btn-primary:hover { background: #00ccad; }
+
+  .btn-ghost {
+    background: var(--surface2);
+    color: var(--text);
+    border: 1px solid var(--border);
+  }
+  .btn-ghost:hover { border-color: var(--accent); color: var(--accent); }
+
+  .btn-danger { background: var(--danger); color: white; }
+
+  /* ── CARDS ── */
+  .card {
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: 12px;
+    padding: 20px;
+  }
+
+  .card-title {
+    font-family: 'Syne', sans-serif;
+    font-size: 14px; font-weight: 700;
+    color: var(--text);
+    margin-bottom: 16px;
+    display: flex; justify-content: space-between; align-items: center;
+  }
+
+  /* ── STATS GRID ── */
+  .stats-grid {
+    display: grid;
+    grid-template-columns: repeat(4, 1fr);
+    gap: 16px;
+    margin-bottom: 24px;
+  }
+
+  .stat-card {
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: 12px;
+    padding: 20px;
+    position: relative;
+    overflow: hidden;
+  }
+
+  .stat-card::before {
+    content: '';
+    position: absolute;
+    top: 0; left: 0; right: 0;
+    height: 2px;
+  }
+  .stat-card.c1::before { background: var(--info); }
+  .stat-card.c2::before { background: var(--warning); }
+  .stat-card.c3::before { background: var(--success); }
+  .stat-card.c4::before { background: var(--accent3); }
+
+  .stat-label {
+    font-size: 11px;
+    font-family: 'IBM Plex Mono', monospace;
+    color: var(--muted);
+    text-transform: uppercase;
+    letter-spacing: 1px;
+    margin-bottom: 10px;
+  }
+
+  .stat-value {
+    font-family: 'Syne', sans-serif;
+    font-size: 32px; font-weight: 800;
+    line-height: 1;
+    margin-bottom: 8px;
+  }
+
+  .stat-trend {
+    font-size: 12px; color: var(--success);
+    display: flex; align-items: center; gap: 4px;
+  }
+  .stat-trend.down { color: var(--danger); }
+
+  /* ── TABLE ── */
+  .table-wrap {
+    overflow-x: auto;
+    border-radius: 10px;
+    border: 1px solid var(--border);
+  }
+
+  table {
+    width: 100%; border-collapse: collapse;
+    font-size: 13px;
+  }
+
+  thead tr {
+    background: var(--surface2);
+    border-bottom: 1px solid var(--border);
+  }
+
+  th {
+    padding: 12px 16px;
+    text-align: left;
+    font-size: 11px;
+    font-family: 'IBM Plex Mono', monospace;
+    color: var(--muted);
+    text-transform: uppercase;
+    letter-spacing: 1px;
+    font-weight: 500;
+    white-space: nowrap;
+  }
+
+  td {
+    padding: 13px 16px;
+    border-bottom: 1px solid rgba(46,51,71,0.5);
+    color: var(--text);
+    vertical-align: middle;
+  }
+
+  tbody tr:last-child td { border-bottom: none; }
+  tbody tr:hover td { background: rgba(255,255,255,0.02); }
+
+  .proto-id {
+    font-family: 'IBM Plex Mono', monospace;
+    font-size: 12px; color: var(--accent);
+    font-weight: 500;
+  }
+
+  /* ── STATUS BADGES ── */
+  .status {
+    display: inline-flex; align-items: center; gap: 5px;
+    padding: 3px 10px; border-radius: 6px;
+    font-size: 11px; font-weight: 600;
+    text-transform: uppercase; letter-spacing: 0.5px;
+  }
+  .status::before { content:''; width:6px; height:6px; border-radius:50%; }
+
+  .status.aberto { background: rgba(59,130,246,0.15); color: var(--info); }
+  .status.aberto::before { background: var(--info); }
+
+  .status.andamento { background: rgba(245,158,11,0.15); color: var(--warning); }
+  .status.andamento::before { background: var(--warning); }
+
+  .status.concluido { background: rgba(34,197,94,0.15); color: var(--success); }
+  .status.concluido::before { background: var(--success); }
+
+  .status.aguardando { background: rgba(168,85,247,0.15); color: #A855F7; }
+  .status.aguardando::before { background: #A855F7; }
+
+  .status.cancelado { background: rgba(239,68,68,0.15); color: var(--danger); }
+  .status.cancelado::before { background: var(--danger); }
+
+  /* ── PRIORITY ── */
+  .priority {
+    display: inline-block;
+    padding: 3px 8px; border-radius: 5px;
+    font-size: 11px; font-weight: 700;
+    text-transform: uppercase;
+  }
+  .priority.alta { background: rgba(239,68,68,0.15); color: var(--danger); }
+  .priority.media { background: rgba(245,158,11,0.15); color: var(--warning); }
+  .priority.baixa { background: rgba(34,197,94,0.15); color: var(--success); }
+
+  /* ── FORMS ── */
+  .form-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 20px; }
+  .form-group { display: flex; flex-direction: column; gap: 6px; }
+  .form-group.full { grid-column: 1 / -1; }
+
+  label {
+    font-size: 11px;
+    font-family: 'IBM Plex Mono', monospace;
+    color: var(--muted);
+    text-transform: uppercase;
+    letter-spacing: 1px;
+    font-weight: 500;
+  }
+
+  input, select, textarea {
+    background: var(--surface2);
+    border: 1px solid var(--border);
+    border-radius: 8px;
+    padding: 10px 14px;
+    color: var(--text);
+    font-size: 14px;
+    font-family: 'DM Sans', sans-serif;
+    outline: none;
+    transition: border-color 0.15s;
+    width: 100%;
+  }
+
+  input:focus, select:focus, textarea:focus {
+    border-color: var(--accent);
+    box-shadow: 0 0 0 3px rgba(0,229,195,0.1);
+  }
+
+  textarea { resize: vertical; min-height: 100px; }
+
+  select option { background: var(--surface2); }
+
+  .form-actions {
+    display: flex; gap: 10px; justify-content: flex-end;
+    margin-top: 24px; padding-top: 20px;
+    border-top: 1px solid var(--border);
+  }
+
+  /* ── KANBAN ── */
+  .kanban-board {
+    display: grid;
+    grid-template-columns: repeat(4, 1fr);
+    gap: 16px;
+    align-items: start;
+  }
+
+  .kanban-col {
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: 12px;
+    overflow: hidden;
+  }
+
+  .kanban-col-header {
+    padding: 14px 16px;
+    font-size: 12px;
+    font-family: 'IBM Plex Mono', monospace;
+    font-weight: 600;
+    text-transform: uppercase;
+    letter-spacing: 1px;
+    display: flex; justify-content: space-between; align-items: center;
+    border-bottom: 1px solid var(--border);
+  }
+
+  .kanban-col-header.col-aberto { color: var(--info); border-top: 3px solid var(--info); }
+  .kanban-col-header.col-andamento { color: var(--warning); border-top: 3px solid var(--warning); }
+  .kanban-col-header.col-aguardando { color: #A855F7; border-top: 3px solid #A855F7; }
+  .kanban-col-header.col-concluido { color: var(--success); border-top: 3px solid var(--success); }
+
+  .kanban-count {
+    background: var(--surface2);
+    padding: 2px 8px; border-radius: 10px;
+    font-size: 11px;
+  }
+
+  .kanban-cards { padding: 12px; display: flex; flex-direction: column; gap: 8px; }
+
+  .kanban-card {
+    background: var(--surface2);
+    border: 1px solid var(--border);
+    border-radius: 8px;
+    padding: 12px;
+    cursor: pointer;
+    transition: all 0.15s;
+  }
+
+  .kanban-card:hover {
+    border-color: var(--accent);
+    transform: translateY(-1px);
+  }
+
+  .kanban-card-title {
+    font-size: 13px; font-weight: 500;
+    color: var(--text); margin-bottom: 10px;
+    line-height: 1.4;
+  }
+
+  .kanban-card-footer {
+    display: flex; justify-content: space-between; align-items: center;
+  }
+
+  .kanban-dept {
+    font-size: 10px;
+    font-family: 'IBM Plex Mono', monospace;
+    color: var(--muted);
+    background: var(--surface);
+    padding: 2px 7px; border-radius: 4px;
+  }
+
+  .kanban-avatar {
+    width: 22px; height: 22px; border-radius: 50%;
+    display: flex; align-items: center; justify-content: center;
+    font-size: 9px; font-weight: 700; color: white;
+  }
+
+  /* ── ACTIVITY FEED ── */
+  .activity-item {
+    display: flex; gap: 12px; align-items: flex-start;
+    padding: 12px 0;
+    border-bottom: 1px solid rgba(46,51,71,0.5);
+  }
+  .activity-item:last-child { border-bottom: none; }
+
+  .act-dot {
+    width: 8px; height: 8px; border-radius: 50%;
+    margin-top: 5px; flex-shrink: 0;
+  }
+
+  .act-text { font-size: 13px; color: var(--text); line-height: 1.5; }
+  .act-time { font-size: 11px; color: var(--muted); margin-top: 2px; }
+
+  /* ── DETAIL VIEW ── */
+  .detail-grid {
+    display: grid; grid-template-columns: 1fr 320px; gap: 20px;
+  }
+
+  .detail-meta {
+    display: grid; grid-template-columns: 1fr 1fr; gap: 12px;
+    margin-bottom: 20px;
+  }
+
+  .detail-meta-item label { display: block; margin-bottom: 4px; }
+  .detail-meta-item span { font-size: 14px; font-weight: 500; }
+
+  .comment-box {
+    border-top: 1px solid var(--border);
+    margin-top: 20px; padding-top: 20px;
+  }
+
+  .comment-item {
+    display: flex; gap: 12px; margin-bottom: 16px;
+  }
+
+  .comment-avatar {
+    width: 32px; height: 32px; border-radius: 50%;
+    display: flex; align-items: center; justify-content: center;
+    font-size: 11px; font-weight: 700; color: white;
+    flex-shrink: 0;
+  }
+
+  .comment-body {
+    background: var(--surface2);
+    border: 1px solid var(--border);
+    border-radius: 8px; padding: 12px; flex: 1;
+  }
+
+  .comment-author {
+    font-size: 12px; font-weight: 600; color: var(--accent);
+    margin-bottom: 4px;
+  }
+
+  .comment-text { font-size: 13px; line-height: 1.6; }
+  .comment-time { font-size: 11px; color: var(--muted); margin-top: 6px; }
+
+  /* ── TOAST ── */
+  .toast-container {
+    position: fixed; bottom: 24px; right: 24px;
+    display: flex; flex-direction: column; gap: 8px;
+    z-index: 9999;
+  }
+
+  .toast {
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-left: 4px solid var(--accent);
+    border-radius: 10px;
+    padding: 14px 18px;
+    font-size: 13px;
+    min-width: 280px;
+    box-shadow: 0 8px 24px rgba(0,0,0,0.4);
+    animation: slideIn 0.3s ease;
+    display: flex; align-items: center; gap: 10px;
+  }
+
+  .toast.success { border-left-color: var(--success); }
+  .toast.error   { border-left-color: var(--danger); }
+
+  @keyframes slideIn {
+    from { transform: translateX(100%); opacity: 0; }
+    to   { transform: translateX(0);   opacity: 1; }
+  }
+
+  /* ── MODAL ── */
+  .modal-overlay {
+    position: fixed; inset: 0;
+    background: rgba(0,0,0,0.7);
+    z-index: 500;
+    display: flex; align-items: center; justify-content: center;
+    opacity: 0; pointer-events: none;
+    transition: opacity 0.2s;
+  }
+
+  .modal-overlay.open { opacity: 1; pointer-events: all; }
+
+  .modal {
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: 16px;
+    padding: 28px;
+    width: 560px; max-width: 95vw;
+    max-height: 90vh; overflow-y: auto;
+    transform: translateY(20px);
+    transition: transform 0.2s;
+  }
+
+  .modal-overlay.open .modal { transform: translateY(0); }
+
+  .modal-header {
+    display: flex; justify-content: space-between; align-items: center;
+    margin-bottom: 24px;
+  }
+
+  .modal-title {
+    font-family: 'Syne', sans-serif;
+    font-size: 18px; font-weight: 700;
+  }
+
+  .modal-close {
+    width: 30px; height: 30px; border-radius: 6px;
+    background: var(--surface2); border: 1px solid var(--border);
+    color: var(--muted); cursor: pointer; font-size: 16px;
+    display: flex; align-items: center; justify-content: center;
+  }
+
+  /* ── PAGES ── */
+  .page { display: none; }
+  .page.active { display: block; }
+
+  /* ── CHART BARS ── */
+  .mini-chart {
+    display: flex; align-items: flex-end; gap: 6px;
+    height: 60px; padding-top: 8px;
+  }
+  .bar {
+    flex: 1; border-radius: 4px 4px 0 0;
+    background: rgba(0,229,195,0.3);
+    transition: height 0.3s;
+    position: relative; cursor: pointer;
+  }
+  .bar:hover { background: rgba(0,229,195,0.6); }
+
+  /* ── EMPTY STATE ── */
+  .empty-state {
+    text-align: center; padding: 60px 20px;
+    color: var(--muted);
+  }
+  .empty-state .icon { font-size: 40px; margin-bottom: 12px; }
+  .empty-state p { font-size: 14px; }
+
+  /* ── RESPONSIVE ── */
+  @media (max-width: 900px) {
+    .sidebar { display: none; }
+    .main { margin-left: 0; }
+    .stats-grid { grid-template-columns: 1fr 1fr; }
+    .kanban-board { grid-template-columns: 1fr 1fr; }
+    .form-grid { grid-template-columns: 1fr; }
+    .detail-grid { grid-template-columns: 1fr; }
+  }
+
+  .divider { border:none; border-top: 1px solid var(--border); margin: 20px 0; }
+
+  .tag {
+    display: inline-block;
+    padding: 3px 8px; border-radius: 5px;
+    font-size: 11px;
+    background: var(--surface2);
+    border: 1px solid var(--border);
+    color: var(--muted);
+    margin: 2px;
+  }
+
+  .link-btn {
+    background: none; border: none;
+    color: var(--accent); font-size: 13px;
+    cursor: pointer; font-family: 'DM Sans', sans-serif;
+    font-weight: 500; padding: 0;
+    text-decoration: underline;
+  }
+
+  .section-gap { margin-bottom: 20px; }
+</style>
+</head>
+<body>
+
+<!-- TOPBAR -->
+<header class="topbar">
+  <span class="logo" onclick="navigate('dashboard')">Flux<span>Corp</span></span>
+  <nav class="nav-links">
+    <button class="nav-link active" id="nav-dashboard" onclick="navigate('dashboard')">Dashboard</button>
+    <button class="nav-link" id="nav-chamados" onclick="navigate('chamados')">Chamados</button>
+    <button class="nav-link" id="nav-kanban" onclick="navigate('kanban')">Kanban</button>
+    <button class="nav-link" id="nav-relatorios" onclick="navigate('relatorios')">Relatórios</button>
+    <button class="nav-link" id="nav-admin" onclick="navigate('admin')">Administração</button>
+  </nav>
+  <div class="topbar-right">
+    <div class="notif-btn" onclick="showToast('Você tem 3 notificações não lidas','info')">
+      🔔<div class="notif-dot"></div>
+    </div>
+    <div class="user-chip">
+      <div class="avatar">AN</div>
+      <span class="user-name">Ana R.</span>
+    </div>
+  </div>
+</header>
+
+<!-- SIDEBAR -->
+<aside class="sidebar">
+  <div class="sidebar-section">Principal</div>
+  <button class="sidebar-item active" id="sb-dashboard" onclick="navigate('dashboard')">
+    <span class="sidebar-icon">📊</span> Dashboard
+  </button>
+  <button class="sidebar-item" id="sb-chamados" onclick="navigate('chamados')">
+    <span class="sidebar-icon">🎫</span> Chamados
+    <span class="badge">7</span>
+  </button>
+  <button class="sidebar-item" id="sb-kanban" onclick="navigate('kanban')">
+    <span class="sidebar-icon">📋</span> Kanban
+  </button>
+
+  <div class="sidebar-section">Análise</div>
+  <button class="sidebar-item" id="sb-relatorios" onclick="navigate('relatorios')">
+    <span class="sidebar-icon">📈</span> Relatórios
+  </button>
+
+  <div class="sidebar-section">Sistema</div>
+  <button class="sidebar-item" id="sb-admin" onclick="navigate('admin')">
+    <span class="sidebar-icon">⚙️</span> Administração
+  </button>
+  <button class="sidebar-item" onclick="navigate('novo-chamado')">
+    <span class="sidebar-icon">➕</span> Novo Chamado
+  </button>
+</aside>
+
+<!-- MAIN CONTENT -->
+<div class="layout">
+<main class="main">
+
+<!-- ════════════ DASHBOARD ════════════ -->
+<div class="page active" id="page-dashboard">
+  <div class="page-header">
+    <div>
+      <h1 class="page-title">Dashboard</h1>
+      <p class="page-sub">Visão geral — Maio 2025</p>
+    </div>
+    <button class="btn btn-primary" onclick="navigate('novo-chamado')">➕ Novo Chamado</button>
+  </div>
+
+  <div class="stats-grid">
+    <div class="stat-card c1">
+      <div class="stat-label">Total de Chamados</div>
+      <div class="stat-value" style="color:var(--info)">248</div>
+      <div class="stat-trend">↑ +12% este mês</div>
+    </div>
+    <div class="stat-card c2">
+      <div class="stat-label">Em Andamento</div>
+      <div class="stat-value" style="color:var(--warning)">41</div>
+      <div class="stat-trend" style="color:var(--muted)">→ estável</div>
+    </div>
+    <div class="stat-card c3">
+      <div class="stat-label">SLA Cumprido</div>
+      <div class="stat-value" style="color:var(--success)">91%</div>
+      <div class="stat-trend">↑ meta: 85%</div>
+    </div>
+    <div class="stat-card c4">
+      <div class="stat-label">Tempo Médio</div>
+      <div class="stat-value" style="color:var(--accent3)">6,4h</div>
+      <div class="stat-trend">↓ melhorou</div>
+    </div>
+  </div>
+
+  <div style="display:grid;grid-template-columns:1fr 1fr;gap:20px;margin-bottom:20px;">
+    <div class="card">
+      <div class="card-title">
+        Chamados por Dia (últimos 7 dias)
+        <span style="font-size:11px;color:var(--muted);font-family:'IBM Plex Mono',monospace;">Abr–Mai</span>
+      </div>
+      <div class="mini-chart" id="chart-bars">
+        <div class="bar" style="height:40%" title="Seg: 12"></div>
+        <div class="bar" style="height:65%" title="Ter: 19"></div>
+        <div class="bar" style="height:50%" title="Qua: 15"></div>
+        <div class="bar" style="height:80%" title="Qui: 23"></div>
+        <div class="bar" style="height:45%" title="Sex: 13"></div>
+        <div class="bar" style="height:30%" title="Sáb: 9"></div>
+        <div class="bar" style="height:55%;background:rgba(0,229,195,0.7)" title="Dom: 16"></div>
+      </div>
+      <div style="display:flex;justify-content:space-between;margin-top:6px;font-size:11px;color:var(--muted);font-family:'IBM Plex Mono',monospace;">
+        <span>Seg</span><span>Ter</span><span>Qua</span><span>Qui</span><span>Sex</span><span>Sáb</span><span>Dom</span>
+      </div>
+    </div>
+
+    <div class="card">
+      <div class="card-title">Por Departamento</div>
+      <div style="display:flex;flex-direction:column;gap:10px;">
+        <div>
+          <div style="display:flex;justify-content:space-between;font-size:12px;margin-bottom:4px;">
+            <span>TI</span><span style="color:var(--accent);font-weight:600">42%</span>
+          </div>
+          <div style="background:var(--surface2);border-radius:4px;height:6px;">
+            <div style="background:var(--accent);width:42%;height:100%;border-radius:4px;"></div>
+          </div>
+        </div>
+        <div>
+          <div style="display:flex;justify-content:space-between;font-size:12px;margin-bottom:4px;">
+            <span>RH</span><span style="color:var(--info);font-weight:600">23%</span>
+          </div>
+          <div style="background:var(--surface2);border-radius:4px;height:6px;">
+            <div style="background:var(--info);width:23%;height:100%;border-radius:4px;"></div>
+          </div>
+        </div>
+        <div>
+          <div style="display:flex;justify-content:space-between;font-size:12px;margin-bottom:4px;">
+            <span>Financeiro</span><span style="color:var(--warning);font-weight:600">19%</span>
+          </div>
+          <div style="background:var(--surface2);border-radius:4px;height:6px;">
+            <div style="background:var(--warning);width:19%;height:100%;border-radius:4px;"></div>
+          </div>
+        </div>
+        <div>
+          <div style="display:flex;justify-content:space-between;font-size:12px;margin-bottom:4px;">
+            <span>Outros</span><span style="color:var(--muted);font-weight:600">16%</span>
+          </div>
+          <div style="background:var(--surface2);border-radius:4px;height:6px;">
+            <div style="background:var(--muted);width:16%;height:100%;border-radius:4px;"></div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <div style="display:grid;grid-template-columns:1fr 300px;gap:20px;">
+    <div class="card">
+      <div class="card-title">
+        Chamados Recentes
+        <button class="link-btn" onclick="navigate('chamados')">Ver todos →</button>
+      </div>
+      <div class="table-wrap">
+        <table>
+          <thead><tr>
+            <th>Protocolo</th><th>Título</th><th>Departamento</th><th>Prioridade</th><th>Status</th><th>Ação</th>
+          </tr></thead>
+          <tbody>
+            <tr>
+              <td><span class="proto-id">#3422</span></td>
+              <td>Acesso ao sistema financeiro negado</td>
+              <td>TI</td>
+              <td><span class="priority alta">Alta</span></td>
+              <td><span class="status andamento">Em andamento</span></td>
+              <td><button class="link-btn" onclick="openDetail('3422')">Abrir</button></td>
+            </tr>
+            <tr>
+              <td><span class="proto-id">#3421</span></td>
+              <td>Acesso ao sistema de RH bloqueado</td>
+              <td>RH</td>
+              <td><span class="priority media">Média</span></td>
+              <td><span class="status andamento">Em andamento</span></td>
+              <td><button class="link-btn" onclick="openDetail('3421')">Abrir</button></td>
+            </tr>
+            <tr>
+              <td><span class="proto-id">#3420</span></td>
+              <td>Solicitação de equipamento — notebook</td>
+              <td>Compras</td>
+              <td><span class="priority baixa">Baixa</span></td>
+              <td><span class="status aguardando">Aguardando</span></td>
+              <td><button class="link-btn" onclick="openDetail('3420')">Abrir</button></td>
+            </tr>
+            <tr>
+              <td><span class="proto-id">#3418</span></td>
+              <td>Problema com impressora Sala B</td>
+              <td>TI</td>
+              <td><span class="priority baixa">Baixa</span></td>
+              <td><span class="status concluido">Concluído</span></td>
+              <td><button class="link-btn" onclick="openDetail('3418')">Abrir</button></td>
+            </tr>
+            <tr>
+              <td><span class="proto-id">#3417</span></td>
+              <td>Configurar VPN para trabalho remoto</td>
+              <td>TI</td>
+              <td><span class="priority alta">Alta</span></td>
+              <td><span class="status aberto">Aberto</span></td>
+              <td><button class="link-btn" onclick="openDetail('3417')">Abrir</button></td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
+    </div>
+
+    <div class="card">
+      <div class="card-title">Atividade Recente</div>
+      <div class="activity-item">
+        <div class="act-dot" style="background:var(--success)"></div>
+        <div>
+          <div class="act-text">Carlos M. encerrou chamado <strong>#3414</strong></div>
+          <div class="act-time">há 5 minutos</div>
+        </div>
+      </div>
+      <div class="activity-item">
+        <div class="act-dot" style="background:var(--warning)"></div>
+        <div>
+          <div class="act-text">Novo chamado <strong>#3422</strong> atribuído a Letícia F.</div>
+          <div class="act-time">há 18 minutos</div>
+        </div>
+      </div>
+      <div class="activity-item">
+        <div class="act-dot" style="background:var(--danger)"></div>
+        <div>
+          <div class="act-text">SLA próximo do vencimento — <strong>#3412</strong></div>
+          <div class="act-time">há 42 minutos</div>
+        </div>
+      </div>
+      <div class="activity-item">
+        <div class="act-dot" style="background:var(--info)"></div>
+        <div>
+          <div class="act-text">Ana R. comentou em <strong>#3408</strong></div>
+          <div class="act-time">há 1 hora</div>
+        </div>
+      </div>
+      <div class="activity-item">
+        <div class="act-dot" style="background:var(--success)"></div>
+        <div>
+          <div class="act-text">TI encerrou chamado <strong>#3405</strong></div>
+          <div class="act-time">há 2 horas</div>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- ════════════ LISTA DE CHAMADOS ════════════ -->
+<div class="page" id="page-chamados">
+  <div class="page-header">
+    <div>
+      <h1 class="page-title">Chamados</h1>
+      <p class="page-sub">Todos os chamados do sistema</p>
+    </div>
+    <button class="btn btn-primary" onclick="navigate('novo-chamado')">➕ Novo Chamado</button>
+  </div>
+
+  <!-- Filters -->
+  <div class="card section-gap">
+    <div style="display:flex;gap:12px;flex-wrap:wrap;align-items:center;">
+      <input type="text" placeholder="🔍  Buscar chamado ou protocolo..." style="max-width:260px;" id="search-input" oninput="filterTable()">
+      <select id="filter-status" onchange="filterTable()" style="max-width:160px;">
+        <option value="">Todos os status</option>
+        <option value="aberto">Aberto</option>
+        <option value="andamento">Em andamento</option>
+        <option value="aguardando">Aguardando</option>
+        <option value="concluido">Concluído</option>
+        <option value="cancelado">Cancelado</option>
+      </select>
+      <select id="filter-prioridade" onchange="filterTable()" style="max-width:160px;">
+        <option value="">Todas as prioridades</option>
+        <option value="alta">Alta</option>
+        <option value="media">Média</option>
+        <option value="baixa">Baixa</option>
+      </select>
+      <select id="filter-dept" onchange="filterTable()" style="max-width:160px;">
+        <option value="">Todos os departamentos</option>
+        <option value="TI">TI</option>
+        <option value="RH">RH</option>
+        <option value="Financeiro">Financeiro</option>
+        <option value="Compras">Compras</option>
+      </select>
+      <button class="btn btn-ghost" onclick="clearFilters()">✕ Limpar</button>
+    </div>
+  </div>
+
+  <div class="table-wrap">
+    <table id="chamados-table">
+      <thead><tr>
+        <th>Protocolo</th><th>Título</th><th>Departamento</th>
+        <th>Responsável</th><th>Prioridade</th><th>Status</th><th>Criado em</th><th>Ações</th>
+      </tr></thead>
+      <tbody id="chamados-body">
+        <!-- Populated by JS -->
+      </tbody>
+    </table>
+  </div>
+</div>
+
+<!-- ════════════ DETALHE DO CHAMADO ════════════ -->
+<div class="page" id="page-detalhe">
+  <div class="page-header">
+    <div>
+      <button class="btn btn-ghost" onclick="navigate('chamados')" style="margin-bottom:8px;">← Voltar</button>
+      <h1 class="page-title" id="detail-title">Chamado #3422</h1>
+      <p class="page-sub" id="detail-proto">Protocolo FLXC-3422</p>
+    </div>
+    <div style="display:flex;gap:8px;">
+      <button class="btn btn-ghost" onclick="openModal('modal-status')">🔄 Atualizar Status</button>
+      <button class="btn btn-ghost" onclick="openModal('modal-atribuir')">👤 Atribuir</button>
+    </div>
+  </div>
+
+  <div class="detail-grid">
+    <div>
+      <div class="card section-gap">
+        <div class="card-title">Informações do Chamado</div>
+        <div class="detail-meta">
+          <div class="detail-meta-item">
+            <label>Status</label>
+            <span id="detail-status"><span class="status andamento">Em andamento</span></span>
+          </div>
+          <div class="detail-meta-item">
+            <label>Prioridade</label>
+            <span><span class="priority alta" id="detail-priority">Alta</span></span>
+          </div>
+          <div class="detail-meta-item">
+            <label>Departamento</label>
+            <span id="detail-dept">Tecnologia da Informação</span>
+          </div>
+          <div class="detail-meta-item">
+            <label>Categoria</label>
+            <span id="detail-cat">Acesso e Permissões</span>
+          </div>
+          <div class="detail-meta-item">
+            <label>Solicitante</label>
+            <span id="detail-solicitante">Ana Ribeiro</span>
+          </div>
+          <div class="detail-meta-item">
+            <label>Responsável</label>
+            <span id="detail-responsavel">Letícia Ferreira</span>
+          </div>
+          <div class="detail-meta-item">
+            <label>Criado em</label>
+            <span id="detail-criado">01/05/2025 09:14</span>
+          </div>
+          <div class="detail-meta-item">
+            <label>Prazo SLA</label>
+            <span id="detail-sla" style="color:var(--warning)">01/05/2025 17:00</span>
+          </div>
+        </div>
+        <hr class="divider">
+        <label style="display:block;margin-bottom:8px;">Descrição</label>
+        <p id="detail-desc" style="font-size:14px;line-height:1.7;color:var(--text);">
+          Ao tentar acessar o módulo de pagamentos, recebo a mensagem "Usuário sem permissão". O acesso foi concedido na semana passada mas parou de funcionar hoje após a atualização do sistema.
+        </p>
+      </div>
+
+      <!-- Comments -->
+      <div class="card">
+        <div class="card-title">Comentários e Histórico</div>
+        <div id="comments-list">
+          <div class="comment-item">
+            <div class="comment-avatar" style="background:#1565C0">MR</div>
+            <div class="comment-body">
+              <div class="comment-author">Marcos R. — Técnico TI</div>
+              <div class="comment-text">Iniciando análise do problema. Verificando permissões no Active Directory.</div>
+              <div class="comment-time">01/05/2025 às 09:45</div>
+            </div>
+          </div>
+          <div class="comment-item">
+            <div class="comment-avatar" style="background:#00695C">LF</div>
+            <div class="comment-body">
+              <div class="comment-author">Letícia F. — Gestora TI</div>
+              <div class="comment-text">Atribuindo chamado ao Marcos. Prioridade alta devido ao impacto na operação financeira.</div>
+              <div class="comment-time">01/05/2025 às 10:02</div>
+            </div>
+          </div>
+        </div>
+        <div class="comment-box">
+          <div class="form-group" style="margin-bottom:10px;">
+            <label>Adicionar comentário</label>
+            <textarea id="new-comment" placeholder="Digite seu comentário..." style="min-height:80px;"></textarea>
+          </div>
+          <button class="btn btn-primary" onclick="addComment()">Enviar Comentário</button>
+        </div>
+      </div>
+    </div>
+
+    <!-- Side info -->
+    <div>
+      <div class="card section-gap">
+        <div class="card-title">Histórico de Status</div>
+        <div class="activity-item">
+          <div class="act-dot" style="background:var(--warning)"></div>
+          <div>
+            <div class="act-text">Status → <strong>Em Andamento</strong></div>
+            <div class="act-time">01/05/2025 · Letícia F.</div>
+          </div>
+        </div>
+        <div class="activity-item">
+          <div class="act-dot" style="background:var(--info)"></div>
+          <div>
+            <div class="act-text">Chamado <strong>Aberto</strong></div>
+            <div class="act-time">01/05/2025 · Ana R.</div>
+          </div>
+        </div>
+      </div>
+
+      <div class="card">
+        <div class="card-title">Ações Rápidas</div>
+        <div style="display:flex;flex-direction:column;gap:8px;">
+          <button class="btn btn-ghost" style="justify-content:flex-start;" onclick="changeStatus('concluido')">✅ Marcar como Concluído</button>
+          <button class="btn btn-ghost" style="justify-content:flex-start;" onclick="changeStatus('aguardando')">⏳ Aguardando Retorno</button>
+          <button class="btn btn-ghost" style="justify-content:flex-start;" onclick="changeStatus('cancelado')">❌ Cancelar Chamado</button>
+          <hr class="divider">
+          <button class="btn btn-ghost" style="justify-content:flex-start;" onclick="showToast('Relatório exportado com sucesso!','success')">📄 Exportar PDF</button>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- ════════════ KANBAN ════════════ -->
+<div class="page" id="page-kanban">
+  <div class="page-header">
+    <div>
+      <h1 class="page-title">Kanban</h1>
+      <p class="page-sub">Arraste os cards entre colunas</p>
+    </div>
+    <div style="display:flex;gap:8px;">
+      <select style="max-width:160px;">
+        <option>Todos os departamentos</option>
+        <option>TI</option><option>RH</option><option>Financeiro</option>
+      </select>
+      <button class="btn btn-primary" onclick="navigate('novo-chamado')">➕ Novo</button>
+    </div>
+  </div>
+
+  <div class="kanban-board">
+    <div class="kanban-col">
+      <div class="kanban-col-header col-aberto">Aberto <span class="kanban-count">4</span></div>
+      <div class="kanban-cards">
+        <div class="kanban-card" onclick="openDetail('3417')">
+          <div class="kanban-card-title">Configurar VPN para trabalho remoto</div>
+          <span class="priority alta" style="font-size:10px;margin-bottom:8px;display:inline-block;">Alta</span>
+          <div class="kanban-card-footer">
+            <span class="kanban-dept">TI</span>
+            <div class="kanban-avatar" style="background:#1565C0">MR</div>
+          </div>
+        </div>
+        <div class="kanban-card" onclick="showToast('Abrindo chamado...','info')">
+          <div class="kanban-card-title">Trocar monitor estação 12-B</div>
+          <span class="priority media" style="font-size:10px;margin-bottom:8px;display:inline-block;">Média</span>
+          <div class="kanban-card-footer">
+            <span class="kanban-dept">Infra</span>
+            <div class="kanban-avatar" style="background:#6A1B9A">LS</div>
+          </div>
+        </div>
+        <div class="kanban-card" onclick="showToast('Abrindo chamado...','info')">
+          <div class="kanban-card-title">Instalar software CAD</div>
+          <span class="priority baixa" style="font-size:10px;margin-bottom:8px;display:inline-block;">Baixa</span>
+          <div class="kanban-card-footer">
+            <span class="kanban-dept">Engenharia</span>
+            <div class="kanban-avatar" style="background:#00695C">PB</div>
+          </div>
+        </div>
+        <div class="kanban-card" onclick="showToast('Abrindo chamado...','info')">
+          <div class="kanban-card-title">Renovar licença antivírus</div>
+          <span class="priority alta" style="font-size:10px;margin-bottom:8px;display:inline-block;">Alta</span>
+          <div class="kanban-card-footer">
+            <span class="kanban-dept">TI</span>
+            <div class="kanban-avatar" style="background:#C62828">JT</div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <div class="kanban-col">
+      <div class="kanban-col-header col-andamento">Em Andamento <span class="kanban-count">3</span></div>
+      <div class="kanban-cards">
+        <div class="kanban-card" onclick="openDetail('3422')">
+          <div class="kanban-card-title">Acesso ao sistema financeiro negado</div>
+          <span class="priority alta" style="font-size:10px;margin-bottom:8px;display:inline-block;">Alta</span>
+          <div class="kanban-card-footer">
+            <span class="kanban-dept">TI</span>
+            <div class="kanban-avatar" style="background:#E65100">LF</div>
+          </div>
+        </div>
+        <div class="kanban-card" onclick="openDetail('3421')">
+          <div class="kanban-card-title">Acesso ao sistema de RH bloqueado</div>
+          <span class="priority media" style="font-size:10px;margin-bottom:8px;display:inline-block;">Média</span>
+          <div class="kanban-card-footer">
+            <span class="kanban-dept">RH</span>
+            <div class="kanban-avatar" style="background:#1565C0">MR</div>
+          </div>
+        </div>
+        <div class="kanban-card" onclick="showToast('Abrindo chamado...','info')">
+          <div class="kanban-card-title">Erro ao gerar relatório mensal</div>
+          <span class="priority media" style="font-size:10px;margin-bottom:8px;display:inline-block;">Média</span>
+          <div class="kanban-card-footer">
+            <span class="kanban-dept">Financeiro</span>
+            <div class="kanban-avatar" style="background:#6A1B9A">LS</div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <div class="kanban-col">
+      <div class="kanban-col-header col-aguardando">Aguardando <span class="kanban-count">2</span></div>
+      <div class="kanban-cards">
+        <div class="kanban-card" onclick="openDetail('3420')">
+          <div class="kanban-card-title">Solicitação de notebook — aprovação pendente</div>
+          <span class="priority baixa" style="font-size:10px;margin-bottom:8px;display:inline-block;">Baixa</span>
+          <div class="kanban-card-footer">
+            <span class="kanban-dept">Compras</span>
+            <div class="kanban-avatar" style="background:#00695C">PB</div>
+          </div>
+        </div>
+        <div class="kanban-card" onclick="showToast('Abrindo chamado...','info')">
+          <div class="kanban-card-title">Upgrade switch sala servidores</div>
+          <span class="priority alta" style="font-size:10px;margin-bottom:8px;display:inline-block;">Alta</span>
+          <div class="kanban-card-footer">
+            <span class="kanban-dept">TI</span>
+            <div class="kanban-avatar" style="background:#E65100">LF</div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <div class="kanban-col">
+      <div class="kanban-col-header col-concluido">Concluído <span class="kanban-count">5</span></div>
+      <div class="kanban-cards">
+        <div class="kanban-card" style="opacity:0.6" onclick="openDetail('3418')">
+          <div class="kanban-card-title">Problema impressora Sala B</div>
+          <span class="priority baixa" style="font-size:10px;margin-bottom:8px;display:inline-block;">Baixa</span>
+          <div class="kanban-card-footer">
+            <span class="kanban-dept">TI</span>
+            <div class="kanban-avatar" style="background:#E65100">LF</div>
+          </div>
+        </div>
+        <div class="kanban-card" style="opacity:0.6" onclick="showToast('Abrindo chamado...','info')">
+          <div class="kanban-card-title">Reset de senha — usuário ADM</div>
+          <span class="priority media" style="font-size:10px;margin-bottom:8px;display:inline-block;">Média</span>
+          <div class="kanban-card-footer">
+            <span class="kanban-dept">TI</span>
+            <div class="kanban-avatar" style="background:#1565C0">MR</div>
+          </div>
+        </div>
+        <div class="kanban-card" style="opacity:0.6" onclick="showToast('Abrindo chamado...','info')">
+          <div class="kanban-card-title">Configurar e-mail novo colaborador</div>
+          <span class="priority baixa" style="font-size:10px;margin-bottom:8px;display:inline-block;">Baixa</span>
+          <div class="kanban-card-footer">
+            <span class="kanban-dept">RH</span>
+            <div class="kanban-avatar" style="background:#6A1B9A">LS</div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- ════════════ NOVO CHAMADO ════════════ -->
+<div class="page" id="page-novo-chamado">
+  <div class="page-header">
+    <div>
+      <button class="btn btn-ghost" onclick="navigate('chamados')" style="margin-bottom:8px;">← Voltar</button>
+      <h1 class="page-title">Abrir Novo Chamado</h1>
+      <p class="page-sub">Preencha as informações abaixo para registrar sua solicitação</p>
+    </div>
+  </div>
+
+  <div style="max-width:760px;">
+    <div class="card">
+      <div class="card-title" style="color:var(--accent);margin-bottom:20px;">📋 Informações Básicas</div>
+      <div class="form-grid">
+        <div class="form-group full">
+          <label>Título do Chamado *</label>
+          <input type="text" id="nc-titulo" placeholder="Descreva brevemente o problema ou solicitação">
+        </div>
+        <div class="form-group">
+          <label>Departamento Destino *</label>
+          <select id="nc-dept">
+            <option value="">Selecione o departamento</option>
+            <option>Tecnologia da Informação</option>
+            <option>Recursos Humanos</option>
+            <option>Financeiro</option>
+            <option>Infraestrutura</option>
+            <option>Compras</option>
+            <option>Engenharia</option>
+          </select>
+        </div>
+        <div class="form-group">
+          <label>Categoria *</label>
+          <select id="nc-cat">
+            <option value="">Selecione a categoria</option>
+            <option>Acesso e Permissões</option>
+            <option>Hardware</option>
+            <option>Software</option>
+            <option>Rede / Conectividade</option>
+            <option>Solicitação de Equipamento</option>
+            <option>Dúvida / Suporte</option>
+            <option>Outros</option>
+          </select>
+        </div>
+        <div class="form-group">
+          <label>Prioridade *</label>
+          <select id="nc-prioridade">
+            <option value="">Selecione a prioridade</option>
+            <option value="alta">🔴 Alta — Impacta produção</option>
+            <option value="media" selected>🟡 Média — Trabalho parcial</option>
+            <option value="baixa">🟢 Baixa — Não urgente</option>
+          </select>
+        </div>
+        <div class="form-group">
+          <label>Prazo Esperado</label>
+          <input type="date" id="nc-prazo">
+        </div>
+      </div>
+
+      <hr class="divider">
+      <div class="card-title" style="color:var(--accent);margin-bottom:16px;">📝 Detalhamento</div>
+
+      <div class="form-grid">
+        <div class="form-group full">
+          <label>Descrição Completa *</label>
+          <textarea id="nc-desc" placeholder="Descreva detalhadamente o problema, informando quando começou, o que foi feito e o impacto causado..."></textarea>
+        </div>
+        <div class="form-group full">
+          <label>Passos para Reproduzir (opcional)</label>
+          <textarea id="nc-passos" placeholder="1. Acesse o módulo X&#10;2. Clique em Y&#10;3. O erro Z aparece..." style="min-height:80px;"></textarea>
+        </div>
+      </div>
+
+      <div class="form-actions">
+        <button class="btn btn-ghost" onclick="navigate('chamados')">Cancelar</button>
+        <button class="btn btn-ghost" onclick="showToast('Rascunho salvo!','success')">Salvar Rascunho</button>
+        <button class="btn btn-primary" onclick="submitChamado()">✅ Abrir Chamado</button>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- ════════════ RELATÓRIOS ════════════ -->
+<div class="page" id="page-relatorios">
+  <div class="page-header">
+    <div>
+      <h1 class="page-title">Relatórios</h1>
+      <p class="page-sub">Análise e exportação de dados</p>
+    </div>
+    <button class="btn btn-primary" onclick="showToast('Relatório exportado em PDF!','success')">📄 Exportar PDF</button>
+  </div>
+
+  <div style="display:grid;grid-template-columns:1fr 1fr 1fr;gap:16px;margin-bottom:24px;">
+    <div class="card" style="text-align:center;cursor:pointer" onclick="showToast('Gerando relatório de SLA...','info')">
+      <div style="font-size:32px;margin-bottom:8px;">📊</div>
+      <div style="font-weight:600;margin-bottom:4px;">Relatório de SLA</div>
+      <div style="font-size:12px;color:var(--muted)">Cumprimento por departamento</div>
+    </div>
+    <div class="card" style="text-align:center;cursor:pointer" onclick="showToast('Gerando relatório de produtividade...','info')">
+      <div style="font-size:32px;margin-bottom:8px;">👥</div>
+      <div style="font-weight:600;margin-bottom:4px;">Produtividade</div>
+      <div style="font-size:12px;color:var(--muted)">Chamados por técnico</div>
+    </div>
+    <div class="card" style="text-align:center;cursor:pointer" onclick="showToast('Gerando relatório de volume...','info')">
+      <div style="font-size:32px;margin-bottom:8px;">📈</div>
+      <div style="font-weight:600;margin-bottom:4px;">Volume</div>
+      <div style="font-size:12px;color:var(--muted)">Chamados por período</div>
+    </div>
+  </div>
+
+  <div class="card section-gap">
+    <div class="card-title">
+      Filtros do Relatório
+    </div>
+    <div style="display:flex;gap:12px;flex-wrap:wrap;">
+      <div class="form-group">
+        <label>Período Início</label>
+        <input type="date" value="2025-04-01">
+      </div>
+      <div class="form-group">
+        <label>Período Fim</label>
+        <input type="date" value="2025-05-01">
+      </div>
+      <div class="form-group">
+        <label>Departamento</label>
+        <select><option>Todos</option><option>TI</option><option>RH</option><option>Financeiro</option></select>
+      </div>
+      <div class="form-group">
+        <label>Status</label>
+        <select><option>Todos</option><option>Concluído</option><option>Em andamento</option></select>
+      </div>
+      <div style="display:flex;align-items:flex-end;">
+        <button class="btn btn-primary" onclick="showToast('Relatório gerado com sucesso!','success')">Gerar Relatório</button>
+      </div>
+    </div>
+  </div>
+
+  <div class="card">
+    <div class="card-title">Resumo — Abril/Maio 2025</div>
+    <div style="display:grid;grid-template-columns:repeat(3,1fr);gap:16px;margin-bottom:20px;">
+      <div style="text-align:center;padding:16px;background:var(--surface2);border-radius:8px;">
+        <div style="font-size:28px;font-weight:800;color:var(--accent);font-family:'Syne',sans-serif;">248</div>
+        <div style="font-size:12px;color:var(--muted);">Total de chamados</div>
+      </div>
+      <div style="text-align:center;padding:16px;background:var(--surface2);border-radius:8px;">
+        <div style="font-size:28px;font-weight:800;color:var(--success);font-family:'Syne',sans-serif;">226</div>
+        <div style="font-size:12px;color:var(--muted);">Dentro do SLA</div>
+      </div>
+      <div style="text-align:center;padding:16px;background:var(--surface2);border-radius:8px;">
+        <div style="font-size:28px;font-weight:800;color:var(--warning);font-family:'Syne',sans-serif;">6,4h</div>
+        <div style="font-size:12px;color:var(--muted);">Tempo médio resolução</div>
+      </div>
+    </div>
+
+    <div class="table-wrap">
+      <table>
+        <thead><tr>
+          <th>Departamento</th><th>Total</th><th>Concluídos</th><th>Em Aberto</th><th>SLA %</th><th>Tempo Médio</th>
+        </tr></thead>
+        <tbody>
+          <tr><td>Tecnologia da Informação</td><td>104</td><td>87</td><td>17</td><td><span style="color:var(--success)">94%</span></td><td>5,2h</td></tr>
+          <tr><td>Recursos Humanos</td><td>57</td><td>48</td><td>9</td><td><span style="color:var(--success)">89%</span></td><td>7,1h</td></tr>
+          <tr><td>Financeiro</td><td>47</td><td>38</td><td>9</td><td><span style="color:var(--warning)">81%</span></td><td>8,4h</td></tr>
+          <tr><td>Compras / Infraestrutura</td><td>40</td><td>32</td><td>8</td><td><span style="color:var(--success)">92%</span></td><td>6,8h</td></tr>
+        </tbody>
+      </table>
+    </div>
+  </div>
+</div>
+
+<!-- ════════════ ADMINISTRAÇÃO ════════════ -->
+<div class="page" id="page-admin">
+  <div class="page-header">
+    <div>
+      <h1 class="page-title">Administração</h1>
+      <p class="page-sub">Gerenciamento de usuários, perfis e configurações do sistema</p>
+    </div>
+    <button class="btn btn-primary" onclick="openModal('modal-novo-usuario')">➕ Novo Usuário</button>
+  </div>
+
+  <div style="display:grid;grid-template-columns:1fr 1fr;gap:20px;">
+    <div class="card">
+      <div class="card-title">Usuários Cadastrados</div>
+      <div class="table-wrap">
+        <table>
+          <thead><tr><th>Nome</th><th>Perfil</th><th>Departamento</th><th>Status</th><th></th></tr></thead>
+          <tbody>
+            <tr>
+              <td><div style="display:flex;align-items:center;gap:8px;"><div class="avatar" style="width:28px;height:28px;font-size:10px;">AN</div> Ana Ribeiro</div></td>
+              <td><span class="tag">Solicitante</span></td>
+              <td>Financeiro</td>
+              <td><span class="status concluido">Ativo</span></td>
+              <td><button class="link-btn" onclick="showToast('Editando usuário...','info')">Editar</button></td>
+            </tr>
+            <tr>
+              <td><div style="display:flex;align-items:center;gap:8px;"><div class="avatar" style="width:28px;height:28px;font-size:10px;background:#1565C0;">MR</div> Marcos R.</div></td>
+              <td><span class="tag">Técnico</span></td>
+              <td>TI</td>
+              <td><span class="status concluido">Ativo</span></td>
+              <td><button class="link-btn" onclick="showToast('Editando usuário...','info')">Editar</button></td>
+            </tr>
+            <tr>
+              <td><div style="display:flex;align-items:center;gap:8px;"><div class="avatar" style="width:28px;height:28px;font-size:10px;background:#E65100;">LF</div> Letícia F.</div></td>
+              <td><span class="tag">Gestor</span></td>
+              <td>TI</td>
+              <td><span class="status concluido">Ativo</span></td>
+              <td><button class="link-btn" onclick="showToast('Editando usuário...','info')">Editar</button></td>
+            </tr>
+            <tr>
+              <td><div style="display:flex;align-items:center;gap:8px;"><div class="avatar" style="width:28px;height:28px;font-size:10px;background:#6A1B9A;">LS</div> Lucas S.</div></td>
+              <td><span class="tag">Técnico</span></td>
+              <td>Infra</td>
+              <td><span class="status cancelado">Inativo</span></td>
+              <td><button class="link-btn" onclick="showToast('Editando usuário...','info')">Editar</button></td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
+    </div>
+
+    <div>
+      <div class="card section-gap">
+        <div class="card-title">Departamentos</div>
+        <div style="display:flex;flex-direction:column;gap:8px;">
+          <div style="display:flex;justify-content:space-between;align-items:center;padding:10px 12px;background:var(--surface2);border-radius:8px;">
+            <span style="font-size:13px;">Tecnologia da Informação</span>
+            <div style="display:flex;gap:6px;align-items:center;">
+              <span style="font-size:12px;color:var(--muted);">SLA: 8h</span>
+              <button class="link-btn" onclick="showToast('Editando departamento...','info')">Editar</button>
+            </div>
+          </div>
+          <div style="display:flex;justify-content:space-between;align-items:center;padding:10px 12px;background:var(--surface2);border-radius:8px;">
+            <span style="font-size:13px;">Recursos Humanos</span>
+            <div style="display:flex;gap:6px;align-items:center;">
+              <span style="font-size:12px;color:var(--muted);">SLA: 24h</span>
+              <button class="link-btn" onclick="showToast('Editando departamento...','info')">Editar</button>
+            </div>
+          </div>
+          <div style="display:flex;justify-content:space-between;align-items:center;padding:10px 12px;background:var(--surface2);border-radius:8px;">
+            <span style="font-size:13px;">Financeiro</span>
+            <div style="display:flex;gap:6px;align-items:center;">
+              <span style="font-size:12px;color:var(--muted);">SLA: 12h</span>
+              <button class="link-btn" onclick="showToast('Editando departamento...','info')">Editar</button>
+            </div>
+          </div>
+          <button class="btn btn-ghost" style="margin-top:6px;" onclick="showToast('Novo departamento...','info')">➕ Adicionar Departamento</button>
+        </div>
+      </div>
+
+      <div class="card">
+        <div class="card-title">Configurações do Sistema</div>
+        <div style="display:flex;flex-direction:column;gap:14px;">
+          <div style="display:flex;justify-content:space-between;align-items:center;">
+            <div>
+              <div style="font-size:13px;font-weight:500;">Notificações por E-mail</div>
+              <div style="font-size:12px;color:var(--muted);">Enviar ao abrir e encerrar chamados</div>
+            </div>
+            <div style="width:40px;height:22px;background:var(--accent);border-radius:11px;position:relative;cursor:pointer;">
+              <div style="width:16px;height:16px;background:white;border-radius:50%;position:absolute;right:3px;top:3px;"></div>
+            </div>
+          </div>
+          <hr class="divider" style="margin:0;">
+          <div style="display:flex;justify-content:space-between;align-items:center;">
+            <div>
+              <div style="font-size:13px;font-weight:500;">Alerta de SLA</div>
+              <div style="font-size:12px;color:var(--muted);">Notificar 2h antes do vencimento</div>
+            </div>
+            <div style="width:40px;height:22px;background:var(--accent);border-radius:11px;position:relative;cursor:pointer;">
+              <div style="width:16px;height:16px;background:white;border-radius:50%;position:absolute;right:3px;top:3px;"></div>
+            </div>
+          </div>
+          <hr class="divider" style="margin:0;">
+          <div style="display:flex;justify-content:space-between;align-items:center;">
+            <div>
+              <div style="font-size:13px;font-weight:500;">Modo de Manutenção</div>
+              <div style="font-size:12px;color:var(--muted);">Bloquear acesso temporariamente</div>
+            </div>
+            <div style="width:40px;height:22px;background:var(--border);border-radius:11px;position:relative;cursor:pointer;" onclick="showToast('Modo manutenção ativado!','error')">
+              <div style="width:16px;height:16px;background:white;border-radius:50%;position:absolute;left:3px;top:3px;"></div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+</main>
+</div>
+
+<!-- ════════════ MODALS ════════════ -->
+<div class="modal-overlay" id="modal-status">
+  <div class="modal">
+    <div class="modal-header">
+      <span class="modal-title">Atualizar Status</span>
+      <button class="modal-close" onclick="closeModal('modal-status')">✕</button>
+    </div>
+    <div class="form-group" style="margin-bottom:16px;">
+      <label>Novo Status</label>
+      <select id="modal-status-select">
+        <option value="aberto">Aberto</option>
+        <option value="andamento" selected>Em Andamento</option>
+        <option value="aguardando">Aguardando</option>
+        <option value="concluido">Concluído</option>
+        <option value="cancelado">Cancelado</option>
+      </select>
+    </div>
+    <div class="form-group" style="margin-bottom:20px;">
+      <label>Observação (opcional)</label>
+      <textarea placeholder="Descreva o motivo da alteração..."></textarea>
+    </div>
+    <div style="display:flex;gap:8px;justify-content:flex-end;">
+      <button class="btn btn-ghost" onclick="closeModal('modal-status')">Cancelar</button>
+      <button class="btn btn-primary" onclick="saveStatus()">Salvar</button>
+    </div>
+  </div>
+</div>
+
+<div class="modal-overlay" id="modal-atribuir">
+  <div class="modal">
+    <div class="modal-header">
+      <span class="modal-title">Atribuir Responsável</span>
+      <button class="modal-close" onclick="closeModal('modal-atribuir')">✕</button>
+    </div>
+    <div class="form-group" style="margin-bottom:20px;">
+      <label>Técnico Responsável</label>
+      <select>
+        <option>Marcos R. — TI</option>
+        <option>Letícia F. — TI</option>
+        <option>Lucas S. — Infra</option>
+        <option>Pedro B. — Engenharia</option>
+      </select>
+    </div>
+    <div style="display:flex;gap:8px;justify-content:flex-end;">
+      <button class="btn btn-ghost" onclick="closeModal('modal-atribuir')">Cancelar</button>
+      <button class="btn btn-primary" onclick="closeModal('modal-atribuir');showToast('Chamado atribuído com sucesso!','success')">Atribuir</button>
+    </div>
+  </div>
+</div>
+
+<div class="modal-overlay" id="modal-novo-usuario">
+  <div class="modal">
+    <div class="modal-header">
+      <span class="modal-title">Novo Usuário</span>
+      <button class="modal-close" onclick="closeModal('modal-novo-usuario')">✕</button>
+    </div>
+    <div class="form-grid" style="margin-bottom:16px;">
+      <div class="form-group">
+        <label>Nome Completo</label>
+        <input type="text" placeholder="Nome do usuário">
+      </div>
+      <div class="form-group">
+        <label>E-mail</label>
+        <input type="email" placeholder="email@empresa.com">
+      </div>
+      <div class="form-group">
+        <label>Perfil</label>
+        <select>
+          <option>Solicitante</option>
+          <option>Técnico</option>
+          <option>Gestor</option>
+          <option>Administrador</option>
+        </select>
+      </div>
+      <div class="form-group">
+        <label>Departamento</label>
+        <select>
+          <option>TI</option><option>RH</option><option>Financeiro</option><option>Compras</option>
+        </select>
+      </div>
+    </div>
+    <div style="display:flex;gap:8px;justify-content:flex-end;">
+      <button class="btn btn-ghost" onclick="closeModal('modal-novo-usuario')">Cancelar</button>
+      <button class="btn btn-primary" onclick="closeModal('modal-novo-usuario');showToast('Usuário criado com sucesso!','success')">Criar Usuário</button>
+    </div>
+  </div>
+</div>
+
+<!-- TOAST CONTAINER -->
+<div class="toast-container" id="toasts"></div>
+
+<script>
+// ── DATA ───────────────────────────────────────────────
+const chamadosData = [
+  {id:'3422',titulo:'Acesso ao sistema financeiro negado',dept:'TI',resp:'Letícia F.',prioridade:'alta',status:'andamento',criado:'01/05/2025'},
+  {id:'3421',titulo:'Acesso ao sistema de RH bloqueado',dept:'RH',resp:'Marcos R.',prioridade:'media',status:'andamento',criado:'01/05/2025'},
+  {id:'3420',titulo:'Solicitação de equipamento — notebook',dept:'Compras',resp:'—',prioridade:'baixa',status:'aguardando',criado:'30/04/2025'},
+  {id:'3418',titulo:'Problema com impressora Sala B',dept:'TI',resp:'Letícia F.',prioridade:'baixa',status:'concluido',criado:'29/04/2025'},
+  {id:'3417',titulo:'Configurar VPN para trabalho remoto',dept:'TI',resp:'Marcos R.',prioridade:'alta',status:'aberto',criado:'29/04/2025'},
+  {id:'3415',titulo:'Erro ao gerar relatório mensal',dept:'Financeiro',resp:'Lucas S.',prioridade:'media',status:'andamento',criado:'28/04/2025'},
+  {id:'3412',titulo:'Upgrade switch sala servidores',dept:'TI',resp:'Pedro B.',prioridade:'alta',status:'aguardando',criado:'27/04/2025'},
+  {id:'3408',titulo:'Configurar e-mail novo colaborador',dept:'RH',resp:'Marcos R.',prioridade:'baixa',status:'concluido',criado:'25/04/2025'},
+];
+
+// ── NAVIGATION ─────────────────────────────────────────
+function navigate(page) {
+  // Hide all pages
+  document.querySelectorAll('.page').forEach(p => p.classList.remove('active'));
+  // Deactivate nav
+  document.querySelectorAll('.nav-link, .sidebar-item').forEach(el => el.classList.remove('active'));
+
+  const pageMap = {
+    'dashboard':      'page-dashboard',
+    'chamados':       'page-chamados',
+    'kanban':         'page-kanban',
+    'novo-chamado':   'page-novo-chamado',
+    'relatorios':     'page-relatorios',
+    'admin':          'page-admin',
+    'detalhe':        'page-detalhe',
+  };
+
+  const target = pageMap[page] || 'page-dashboard';
+  document.getElementById(target).classList.add('active');
+
+  // Activate nav items
+  const navEl = document.getElementById('nav-' + page);
+  const sbEl  = document.getElementById('sb-' + page);
+  if (navEl) navEl.classList.add('active');
+  if (sbEl)  sbEl.classList.add('active');
+
+  // Init page content
+  if (page === 'chamados') renderChamados();
+
+  window.scrollTo(0,0);
+}
+
+// ── CHAMADOS TABLE ─────────────────────────────────────
+function renderChamados(data) {
+  const rows = data || chamadosData;
+  const tbody = document.getElementById('chamados-body');
+  tbody.innerHTML = rows.map(c => `
+    <tr>
+      <td><span class="proto-id">#${c.id}</span></td>
+      <td>${c.titulo}</td>
+      <td>${c.dept}</td>
+      <td>${c.resp}</td>
+      <td><span class="priority ${c.prioridade}">${c.prioridade.charAt(0).toUpperCase()+c.prioridade.slice(1)}</span></td>
+      <td><span class="status ${c.status}">${statusLabel(c.status)}</span></td>
+      <td style="font-size:12px;color:var(--muted)">${c.criado}</td>
+      <td>
+        <button class="link-btn" onclick="openDetail('${c.id}')">Abrir</button>
+      </td>
+    </tr>
+  `).join('');
+}
+
+function statusLabel(s) {
+  const m = {aberto:'Aberto',andamento:'Em andamento',aguardando:'Aguardando',concluido:'Concluído',cancelado:'Cancelado'};
+  return m[s] || s;
+}
+
+function filterTable() {
+  const q    = document.getElementById('search-input').value.toLowerCase();
+  const st   = document.getElementById('filter-status').value;
+  const pr   = document.getElementById('filter-prioridade').value;
+  const dept = document.getElementById('filter-dept').value;
+  const filtered = chamadosData.filter(c =>
+    (!q    || c.titulo.toLowerCase().includes(q) || c.id.includes(q)) &&
+    (!st   || c.status === st) &&
+    (!pr   || c.prioridade === pr) &&
+    (!dept || c.dept === dept)
+  );
+  renderChamados(filtered);
+}
+
+function clearFilters() {
+  document.getElementById('search-input').value = '';
+  document.getElementById('filter-status').value = '';
+  document.getElementById('filter-prioridade').value = '';
+  document.getElementById('filter-dept').value = '';
+  renderChamados();
+}
+
+// ── DETAIL VIEW ────────────────────────────────────────
+function openDetail(id) {
+  const c = chamadosData.find(x => x.id === id) || chamadosData[0];
+  document.getElementById('detail-title').textContent = `Chamado #${c.id} — ${c.titulo}`;
+  document.getElementById('detail-proto').textContent = `Protocolo FLXC-${c.id}`;
+  document.getElementById('detail-status').innerHTML = `<span class="status ${c.status}">${statusLabel(c.status)}</span>`;
+  document.getElementById('detail-priority').textContent = c.prioridade.charAt(0).toUpperCase()+c.prioridade.slice(1);
+  document.getElementById('detail-priority').className = `priority ${c.prioridade}`;
+  document.getElementById('detail-dept').textContent = c.dept === 'TI' ? 'Tecnologia da Informação' : c.dept;
+  document.getElementById('detail-responsavel').textContent = c.resp;
+  navigate('detalhe');
+}
+
+// ── NOVO CHAMADO ───────────────────────────────────────
+let chamadoCounter = 3423;
+function submitChamado() {
+  const titulo = document.getElementById('nc-titulo').value.trim();
+  const dept   = document.getElementById('nc-dept').value;
+  const cat    = document.getElementById('nc-cat').value;
+  const prio   = document.getElementById('nc-prioridade').value;
+  const desc   = document.getElementById('nc-desc').value.trim();
+
+  if (!titulo || !dept || !cat || !prio || !desc) {
+    showToast('Preencha todos os campos obrigatórios!', 'error');
+    return;
+  }
+
+  const novoId = String(chamadoCounter++);
+  chamadosData.unshift({
+    id: novoId, titulo, dept: dept.split(' ')[0],
+    resp: '—', prioridade: prio, status: 'aberto',
+    criado: new Date().toLocaleDateString('pt-BR')
+  });
+
+  // Reset form
+  ['nc-titulo','nc-dept','nc-cat','nc-prioridade','nc-desc','nc-passos'].forEach(id => {
+    document.getElementById(id).value = '';
+  });
+
+  showToast(`✅ Chamado #${novoId} aberto com sucesso!`, 'success');
+  setTimeout(() => openDetail(novoId), 600);
+}
+
+// ── COMMENTS ──────────────────────────────────────────
+function addComment() {
+  const txt = document.getElementById('new-comment').value.trim();
+  if (!txt) { showToast('Digite um comentário antes de enviar.', 'error'); return; }
+  const now = new Date().toLocaleString('pt-BR', {day:'2-digit',month:'2-digit',year:'numeric',hour:'2-digit',minute:'2-digit'});
+  const html = `
+    <div class="comment-item">
+      <div class="comment-avatar" style="background:var(--accent);color:var(--bg)">AN</div>
+      <div class="comment-body">
+        <div class="comment-author">Ana R. — Solicitante</div>
+        <div class="comment-text">${txt}</div>
+        <div class="comment-time">${now}</div>
+      </div>
+    </div>`;
+  document.getElementById('comments-list').insertAdjacentHTML('beforeend', html);
+  document.getElementById('new-comment').value = '';
+  showToast('Comentário adicionado!', 'success');
+}
+
+// ── STATUS CHANGE ──────────────────────────────────────
+function changeStatus(s) {
+  document.getElementById('detail-status').innerHTML = `<span class="status ${s}">${statusLabel(s)}</span>`;
+  closeModal('modal-status');
+  showToast(`Status atualizado para: ${statusLabel(s)}`, 'success');
+}
+
+function saveStatus() {
+  const s = document.getElementById('modal-status-select').value;
+  changeStatus(s);
+}
+
+// ── MODALS ─────────────────────────────────────────────
+function openModal(id) {
+  document.getElementById(id).classList.add('open');
+}
+function closeModal(id) {
+  document.getElementById(id).classList.remove('open');
+}
+// Close on overlay click
+document.querySelectorAll('.modal-overlay').forEach(overlay => {
+  overlay.addEventListener('click', e => {
+    if (e.target === overlay) overlay.classList.remove('open');
+  });
+});
+
+// ── TOASTS ────────────────────────────────────────────
+function showToast(msg, type='success') {
+  const icons = {success:'✅', error:'❌', info:'ℹ️'};
+  const container = document.getElementById('toasts');
+  const toast = document.createElement('div');
+  toast.className = `toast ${type}`;
+  toast.innerHTML = `<span>${icons[type]||'✅'}</span><span>${msg}</span>`;
+  container.appendChild(toast);
+  setTimeout(() => toast.remove(), 3500);
+}
+
+// ── INIT ───────────────────────────────────────────────
+navigate('dashboard');
+</script>
+</body>
+</html>
